@@ -1048,26 +1048,32 @@ class ConversationBot:
         return state, state, f'{txt} {image_filename} '
 @app.route('/run_text', methods=['POST'])
 def run_text():
+    variable="ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
+    load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in variable.split(',')}
+    bot = ConversationBot(load_dict=load_dict)
     user_text = request.form['text']
     response = bot.run_text(user_text)
     return jsonify(response)
 
 @app.route('/run_image', methods=['POST'])
 def run_image():
+    variable="ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
+    load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in variable.split(',')}
+    bot = ConversationBot(load_dict=load_dict)
     image_data = request.form['image']
     decoded_image = base64.b64decode(image_data)
     image = Image.open(BytesIO(decoded_image))
     response = bot.run_image(image)
     return jsonify(response)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,Text2Image_cuda:0")
-    args = parser.parse_args()
-    load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
-    bot = ConversationBot(load_dict=load_dict)
+# if __name__ == '__main__':
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,Text2Image_cuda:0")
+#     args = parser.parse_args()
+#     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
+#     bot = ConversationBot(load_dict=load_dict)
 
-    app.run(host='0.0.0.0', port=3004)
+#     app.run(host='0.0.0.0', port=3004)
 
 
 
