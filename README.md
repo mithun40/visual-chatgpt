@@ -1,3 +1,8 @@
+#To Run On our own GPU We are Hosting it:
+http://18.132.42.23:3002/
+Create a screen 
+Run this Command on the Server:
+python3 visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
 # Visual ChatGPT 
 
 **Visual ChatGPT** connects ChatGPT and a series of Visual Foundation Models to enable **sending** and **receiving** images during chatting.
