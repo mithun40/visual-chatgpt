@@ -29,8 +29,6 @@ import argparse
 from io import BytesIO
 # from PIL import Image
 from flask import Flask, request, jsonify
-
-app = Flask(__name__)
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
 Visual ChatGPT is able to process and understand large amounts of text and images. As a language model, Visual ChatGPT can not directly read images, but it has a list of tools to finish different visual tasks. Each image will have a file name formed as "image/xxx.png", and Visual ChatGPT can invoke different tools to indirectly understand pictures. When talking about images, Visual ChatGPT is very strict to the file name and will never fabricate nonexistent files. When using tools to generate new image files, Visual ChatGPT is also known that the image may not be the same as the user's demand, and will use other visual question answering tools or description tools to observe the real image. Visual ChatGPT is able to use tools in a sequence, and is loyal to the tool observation outputs rather than faking the image content and image file name. It will remember to provide the file name from the last tool observation, if a new image is generated.
@@ -1046,25 +1044,31 @@ class ConversationBot:
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state, f'{txt} {image_filename} '
-@app.route('/run_text', methods=['POST'])
-def run_text():
-    variable="ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
+app = Flask(__name__)
+def create_bot():
+    variable = "ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in variable.split(',')}
     bot = ConversationBot(load_dict=load_dict)
+    return bot
+
+bot = create_bot()
+
+@app.route('/run_text', methods=['POST'])
+def run_text():
     user_text = request.form['text']
     response = bot.run_text(user_text)
     return jsonify(response)
 
 @app.route('/run_image', methods=['POST'])
 def run_image():
-    variable="ImageCaptioning_cuda:0,ImageEditing_cuda:0,VisualQuestionAnswering_cuda:0"
-    load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in variable.split(',')}
-    bot = ConversationBot(load_dict=load_dict)
     image_data = request.form['image']
     decoded_image = base64.b64decode(image_data)
     image = Image.open(BytesIO(decoded_image))
     response = bot.run_image(image)
     return jsonify(response)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3004)
 
 # if __name__ == '__main__':
 #     parser = argparse.ArgumentParser()
